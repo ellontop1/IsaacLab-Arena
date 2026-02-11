@@ -78,23 +78,6 @@ class AlphabetSoupCan(LibraryObject):
         super().__init__(instance_name=instance_name, prim_path=prim_path, initial_pose=initial_pose)
 
 
-# @register_asset
-# class AlphabetSoupCan(LibraryObject):
-#     """
-#     Encapsulates the pick-up object config for a pick-and-place environment.
-#     """
-
-#     name = "alphabet_soup_can"
-#     tags = ["object", "graspable"]
-#     # usd_path = f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd"
-#     usd_path = "https://isaac-dev.ov.nvidia.com/omni/web3/omniverse://isaac-dev.ov.nvidia.com/Isaac/IsaacLab/Arena/assets/object_library/robolab/hope/alphabet_soup_can.usd"
-    
-#     def __init__(
-#         self, instance_name: str | None = None, prim_path: str | None = None, initial_pose: Pose | None = None
-#     ):
-#         super().__init__(instance_name=instance_name, prim_path=prim_path, initial_pose=initial_pose)
-
-
 @register_asset
 class CrackerBox(LibraryObject):
     """
