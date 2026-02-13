@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
 
 # Update pip to the latest version
 RUN pip3 install --upgrade pip
-
+RUN /isaac-sim/python.sh -m pip install --no-build-isolation flatdict==4.0.1
 ################################
 # Install Isaac Lab
 ################################
