@@ -84,7 +84,7 @@ workflow:
       cpu: {{ cpus }}
       gpu: {{ gpus }}
       memory: 700Gi
-      platform: ovx-l40
+      platform: dgx-h100
       storage: 400Gi
   timeout:
     exec_timeout: 7d
@@ -112,6 +112,7 @@ default-values:
 # Static manipulation -- Place alphabet soup can into fridge
   workflow_name: gr1_alphabet_soup_can_into_fridge_gn1_6
   input_dataset_name: gr1_alphabet_soup_can_into_fridge #gr1_ranch_bottle_into_fridge
-  input_demo_name: alphabet_soup_can_into_fridge_generated_100
+  input_demo_name: alphabet_soup_can_into_fridge_generated_100_v1
   embodiment_tag: GR1
-  modality_config_path: /workspace/gr1_manip/gr1_arms_only_data_config.py
+  # modality_config_path: /workspace/gr1_manip/gr1_arms_only_data_config.py
+  modality_config_path: isaaclab_arena_gr00t/embodiments/gr1/gr1_arms_only_data_config.py
