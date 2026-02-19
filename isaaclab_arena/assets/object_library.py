@@ -60,6 +60,9 @@ class LibraryObject(Object):
             asset_cfg_addon=self.asset_cfg_addon,
             **kwargs,
         )
+
+# ---------------- Library Objects used for the Arena DLI ----------------
+
 @register_asset
 class AlphabetSoupCan(LibraryObject):
     """
@@ -70,6 +73,57 @@ class AlphabetSoupCan(LibraryObject):
     tags = ["object", "graspable"]
     usd_path = f"{ISAACLAB_STAGING_NUCLEUS_DIR}/Arena/assets/object_library/robolab/hope/alphabet_soup_can.usd"
     object_type = ObjectType.RIGID
+    scale = (0.7, 0.7, 1.3)
+
+    def __init__(
+        self, instance_name: str | None = None, prim_path: str | None = None, initial_pose: Pose | None = None
+    ):
+        super().__init__(instance_name=instance_name, prim_path=prim_path, initial_pose=initial_pose)
+
+@register_asset
+class KetchupBottle(LibraryObject):
+    """
+    Ketchup Bottle
+    """
+
+    name = "ketchup_bottle"
+    tags = ["object", "graspable"]
+    usd_path = f"{ISAACLAB_STAGING_NUCLEUS_DIR}/Arena/assets/object_library/robolab/hope/ketchup_bottle.usd"
+    object_type = ObjectType.RIGID
+    scale = (0.7, 0.7, 1.2)
+
+    def __init__(
+        self, instance_name: str | None = None, prim_path: str | None = None, initial_pose: Pose | None = None
+    ):
+        super().__init__(instance_name=instance_name, prim_path=prim_path, initial_pose=initial_pose)
+
+@register_asset
+class BbqSauceBottle(LibraryObject):
+    """
+    BBQ Sauce Bottle
+    """
+
+    name = "bbq_sauce_bottle"
+    tags = ["object", "graspable"]
+    usd_path = f"{ISAACLAB_STAGING_NUCLEUS_DIR}/Arena/assets/object_library/robolab/hope/bbq_sauce_bottle.usd"
+    object_type = ObjectType.RIGID
+    scale = (0.7, 0.7, 1.2)
+
+    def __init__(
+        self, instance_name: str | None = None, prim_path: str | None = None, initial_pose: Pose | None = None
+    ):
+        super().__init__(instance_name=instance_name, prim_path=prim_path, initial_pose=initial_pose)
+
+@register_asset
+class MayonnaiseBottle(LibraryObject):
+    """
+    Mayonnaise Bottle
+    """
+
+    name = "mayonnaise_bottle"
+    tags = ["object", "graspable"]
+    usd_path = f"{ISAACLAB_STAGING_NUCLEUS_DIR}/Arena/assets/object_library/robolab/hope/mayonnaise_bottle.usd"
+    object_type = ObjectType.RIGID
     scale = (0.8, 0.8, 1.2)
 
     def __init__(
@@ -77,6 +131,22 @@ class AlphabetSoupCan(LibraryObject):
     ):
         super().__init__(instance_name=instance_name, prim_path=prim_path, initial_pose=initial_pose)
 
+@register_asset
+class ChocolatePuddingMix(LibraryObject):
+    """
+    Chocolate Pudding Mix
+    """
+
+    name = "chocolate_pudding_mix"
+    tags = ["object", "graspable"]
+    usd_path = f"{ISAACLAB_STAGING_NUCLEUS_DIR}/Arena/assets/object_library/robolab/hope/chocolate_pudding_mix.usd"
+    object_type = ObjectType.RIGID
+    scale = (0.8, 0.8, 1.2)
+
+    def __init__(
+        self, instance_name: str | None = None, prim_path: str | None = None, initial_pose: Pose | None = None
+    ):
+        super().__init__(instance_name=instance_name, prim_path=prim_path, initial_pose=initial_pose)
 
 @register_asset
 class CrackerBox(LibraryObject):

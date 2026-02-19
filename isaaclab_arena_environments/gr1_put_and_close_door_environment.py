@@ -199,7 +199,7 @@ class GR1PutAndCloseDoorEnvironment(ExampleEnvironmentBase):
             "--object",
             type=str,
             default="alphabet_soup_can",
-            choices=["sweet_potato", "jug", "ranch_dressing_bottle", "alphabet_soup_can"],
+            choices=["sweet_potato", "jug", "ranch_dressing_bottle", "alphabet_soup_can", "ketchup_bottle", "bbq_sauce_bottle", "mayonnaise_bottle", "chocolate_pudding_mix"],
             help="Object to pick and place",
         )
         parser.add_argument(
