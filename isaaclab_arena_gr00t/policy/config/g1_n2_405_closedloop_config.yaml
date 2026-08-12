@@ -1,0 +1,31 @@
+# Copyright (c) 2025-2026, The Isaac Lab Arena Project Developers (https://github.com/isaac-sim/IsaacLab-Arena/blob/main/CONTRIBUTORS.md).
+# All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Closed-loop config for the fine-tuned GR00T N2 G1 model (new_embodiment,
+# trained on lerobot_output_405). Talks to an N2 policy server over ZMQ; the
+# N2 server itself is launched from the ~/isaac-gr00t-n2 repo (it holds the
+# real modality config + normalization stats from the checkpoint). Arena only
+# needs the client-side obs/action translation described here.
+#
+# Key differences vs g1_locomanip_gr00t_closedloop_config.yaml:
+#   * action_horizon / action_chunk_length = 16 (N2 model predicts 16 steps)
+#   * modality_config_path -> g1_n2_405_data_config.py (leg state included)
+
+language_instruction: "Pick up the object and place it in the target location."
+action_horizon: 16
+embodiment_tag: NEW_EMBODIMENT
+video_backend: decord
+denoising_steps: 4
+
+modality_config_path: isaaclab_arena_gr00t/embodiments/g1/g1_n2_405_data_config.py
+
+policy_joints_config_path: isaaclab_arena_gr00t/embodiments/g1/gr00t_43dof_joint_space.yaml
+action_joints_config_path: isaaclab_arena_gr00t/embodiments/g1/43dof_joint_space.yaml
+state_joints_config_path: isaaclab_arena_gr00t/embodiments/g1/43dof_joint_space.yaml
+
+action_chunk_length: 16
+pov_cam_name_sim: "robot_head_cam_rgb"
+
+task_mode_name: g1_locomanipulation
