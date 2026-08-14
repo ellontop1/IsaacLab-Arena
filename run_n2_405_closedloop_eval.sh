@@ -45,12 +45,19 @@ case "${1:-}" in
     ;;
   eval)
     cd "$ARENA_DIR"
-    # Requires: `uv sync` + `source .venv/bin/activate` (see README) beforehand.
+    # Requires `uv sync` to have completed (see README). We call the venv's
+    # python directly so this works whether or not the venv is activated.
+    PY="$ARENA_DIR/.venv/bin/python"
+    [ -x "$PY" ] || { echo "ERROR: $PY not found -- run 'uv sync' in $ARENA_DIR first."; exit 1; }
     export OMNI_KIT_ACCEPT_EULA=YES ACCEPT_EULA=Y
+    # gr00t lives in the submodule and is NOT installed by a native `uv sync`
+    # (only the Docker -g flavor installs it); put it on the path so Arena's
+    # GR00T policy translation code can import it.
+    export PYTHONPATH="$ARENA_DIR/submodules/Isaac-GR00T:${PYTHONPATH:-}"
     # --headless: no GUI (required on a display-less server like brev).
     # --enable_cameras: offscreen RTX rendering, works in headless mode and is
     #   required because the policy consumes the head camera.
-    exec python isaaclab_arena/evaluation/policy_runner.py \
+    exec "$PY" isaaclab_arena/evaluation/policy_runner.py \
       --policy_type isaaclab_arena_gr00t.policy.gr00t_remote_closedloop_policy.Gr00tRemoteClosedloopPolicy \
       --policy_config_yaml_path isaaclab_arena_gr00t/policy/config/g1_n2_405_closedloop_config.yaml \
       --remote_host "$HOST" \
