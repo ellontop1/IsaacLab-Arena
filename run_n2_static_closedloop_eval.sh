@@ -24,10 +24,14 @@ N2_DIR="${N2_DIR:-$HOME/isaac-gr00t-n2}"
 # Teammates: point this at wherever you `hf download`-ed
 # nvidia/GR00T-N2-G1-arena-static-picknplace (e.g. .../checkpoint-100000).
 CHECKPOINT="${CHECKPOINT:-$N2_DIR/.onboarding/outputs/arena-g1-static-full/checkpoint-100000}"
-# Nested server launcher (see note in the `server` case below). Override with SERVE=.
-SERVE="${SERVE:-$N2_DIR/serve_n2_nested.py}"
-# Server-side embodiment hook dir (registers new_embodiment in the groot runtime).
-HOOK_DIR="${HOOK_DIR:-$N2_DIR/.onboarding/arena_g1_static_hook}"
+# Nested server launcher + embodiment hook. These are vendored into this repo
+# under groot_n2_server/ so eval is replicable from just this GitHub repo (plus a
+# GR00T N2 install for the `groot` package). Fall back to a separate N2 checkout
+# ($N2_DIR) if the vendored copies are absent. Override with SERVE= / HOOK_DIR=.
+SERVE="${SERVE:-$ARENA_DIR/groot_n2_server/serve_n2_nested.py}"
+[ -f "$SERVE" ] || SERVE="$N2_DIR/serve_n2_nested.py"
+HOOK_DIR="${HOOK_DIR:-$ARENA_DIR/groot_n2_server/arena_g1_static_hook}"
+[ -f "$HOOK_DIR/sitecustomize.py" ] || HOOK_DIR="$N2_DIR/.onboarding/arena_g1_static_hook"
 HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-5555}"
 NUM_STEPS="${NUM_STEPS:-1500}"
