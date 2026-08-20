@@ -1,0 +1,42 @@
+# Copyright (c) 2025-2026, The Isaac Lab Arena Project Developers (https://github.com/isaac-sim/IsaacLab-Arena/blob/main/CONTRIBUTORS.md).
+# All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Closed-loop config for the fine-tuned GR00T N2 G1 model (new_embodiment),
+# trained on nvidia/Arena-G1-Static-PickNPlace-Task. Talks to an N2 policy
+# server over ZMQ; the server is launched from the ~/isaac-gr00t-n2 repo (it
+# holds the real modality config + normalization stats from the checkpoint via
+# the arena_g1_static_hook). Arena only needs the client-side obs/action
+# translation described here.
+#
+# Key differences vs g1_locomanip_gr00t_closedloop_config.yaml:
+#   * action_horizon / action_chunk_length = 16 (N2 model predicts 16 steps)
+#   * modality_config_path -> g1_n2_static_data_config.py (leg state included,
+#     absolute upper-body joint actions)
+#   * language_instruction matches the training task (apple -> plate on shelf)
+#
+# NOTE on scene: this model was trained on a STATIC apple->shelf->plate scene.
+# The eval task below (galileo_g1_locomanip_pick_and_place + g1_wbc_joint) is
+# the G1 WBC pick-place env shipped in this repo and validated by
+# tests/test_gr00t_remote_closedloop_policy_runner.py. Its object/scene differ
+# from training (brown box -> blue bin), so treat the first run as a
+# pipeline/generalization smoke test. Swap to a matching static apple scene via
+# run_n2_static_closedloop_eval.sh env vars if you have one registered.
+
+language_instruction: "Pick up the apple from the shelf and place it onto the plate on the same shelf next to it."
+action_horizon: 16
+embodiment_tag: NEW_EMBODIMENT
+video_backend: decord
+denoising_steps: 4
+
+modality_config_path: isaaclab_arena_gr00t/embodiments/g1/g1_n2_static_data_config.py
+
+policy_joints_config_path: isaaclab_arena_gr00t/embodiments/g1/gr00t_43dof_joint_space.yaml
+action_joints_config_path: isaaclab_arena_gr00t/embodiments/g1/43dof_joint_space.yaml
+state_joints_config_path: isaaclab_arena_gr00t/embodiments/g1/43dof_joint_space.yaml
+
+action_chunk_length: 16
+pov_cam_name_sim: "robot_head_cam_rgb"
+
+task_mode_name: g1_locomanipulation
