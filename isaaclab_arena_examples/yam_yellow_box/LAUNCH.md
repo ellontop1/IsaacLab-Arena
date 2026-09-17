@@ -1,13 +1,19 @@
-# Load the YAM scene
+# Open the YAM carton environment
 
-This scene contains a dual-arm YAM station, a table, one yellow box, a blue
-placement target, ground, lighting, and three cameras. Additional props are not
-included. Geometry and camera calibration are provisional. Isaac Sim runtime
-validation has not been performed on the development Mac.
+The starting scene contains two YAM arms, three cameras, a table, and an open
+cardboard box containing an apple, Jell-O box, and can. The former blue target is
+removed. Dimensions and camera calibration are provisional; see [README.md](README.md).
 
-On your configured Linux/NVIDIA Isaac Lab Arena host, fetch and check out the
-`yam-embodiment-assets` branch of `ellontop1/IsaacLab-Arena`. Run the following
-from the repository root inside its Isaac Sim container:
+On your Linux/NVIDIA Isaac Lab Arena host, fetch the updated branch from your fork:
+
+```bash
+git fetch origin
+git switch yam-embodiment-assets
+git pull --ff-only
+```
+
+Here `origin` must point to `ellontop1/IsaacLab-Arena`. Inside the configured Arena
+container, from the repository root, prepare the robot once and launch the scene:
 
 ```bash
 /isaac-sim/python.sh -m isaaclab_arena_examples.yam_yellow_box.prepare_assets
@@ -19,12 +25,11 @@ from the repository root inside its Isaac Sim container:
   --yam_config isaaclab_arena_examples/yam_yellow_box/scene.example.json
 ```
 
-Asset preparation downloads verified I2RT meshes and converts the station URDF
-to `~/.cache/isaaclab_arena/yam/yam_station.usd`. Run it once in the same runtime
-environment used to launch the scene. Keep the generated directory together:
-the USD can reference adjacent files. Generated assets are not stored in Git.
+The preview holds the arm pose. It does not execute a manipulation policy. Kit
+needs a graphical session. Scene loading also requires access to Arena's textured
+prop USD assets; it will fail explicitly if those assets cannot be loaded.
 
-The second command opens the scene with a zero-action policy in IK mode to hold
-the arm pose; it does not perform the pick-and-place task. A graphical Kit session
-must be available. Edit `scene.example.json` to change object sizes and positions
-or point `usd_path` at an already prepared compatible station USD.
+The robot USD and generated carton USD live in `~/.cache/isaaclab_arena/yam` by
+default. Keep robot conversion files together because its USD references adjacent
+files. Models are not committed to Git. To collect demonstrations, use the README's
+collector command with the actual task instruction and operator-confirmed success.

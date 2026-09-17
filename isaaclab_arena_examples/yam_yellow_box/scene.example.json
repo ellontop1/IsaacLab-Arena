@@ -2,24 +2,92 @@
   "usd_path": "~/.cache/isaaclab_arena/yam/yam_station.usd",
   "source_dataset": "nvidia/yam_yellow_box_all",
   "source_verified": false,
-  "task_description": "Pick up the yellow box and place it on the blue target.",
+  "scene_version": "carton_contents_v2",
+  "layout_source": "User description: apple, Jell-O box and can start inside a cardboard box",
+  "task_description": "",
+  "success_mode": "operator_confirmed",
   "fps": 30,
-  "episode_length_s": 60,
+  "episode_length_s": 120,
   "table_height": 0.75,
-  "table_size": [0.9, 1.2, 0.05],
-  "table_center_xy": [0.3, 0.0],
-  "box_size": [0.06, 0.06, 0.05],
-  "box_mass": 0.08,
-  "box_start_xy": [0.35, 0.15],
-  "box_randomization_xy": [0.05, 0.04],
-  "box_yaw_range": [-0.4, 0.4],
-  "target_xy": [0.4, -0.15],
-  "target_size_xy": [0.16, 0.16],
+  "table_size": [
+    0.9,
+    1.2,
+    0.05
+  ],
+  "table_center_xy": [
+    0.3,
+    0.0
+  ],
+  "box_size": [
+    0.36,
+    0.28,
+    0.14
+  ],
+  "box_wall_thickness": 0.004,
+  "box_mass": 0.18,
+  "box_start_xy": [
+    0.38,
+    0.0
+  ],
+  "box_randomization_xy": [
+    0.015,
+    0.015
+  ],
+  "box_yaw_range": [
+    -0.1,
+    0.1
+  ],
+  "prop_randomization_xy": [
+    0.003,
+    0.003
+  ],
+  "spawn_clearance": 0.002,
+  "settle_steps": 60,
+  "props": [
+    {
+      "name": "apple",
+      "asset_name": "apple_02_objaverse_robolab",
+      "size": [
+        0.075,
+        0.075,
+        0.075
+      ],
+      "mass": 0.15,
+      "offset_xy": [
+        -0.1,
+        -0.045
+      ]
+    },
+    {
+      "name": "jello_box",
+      "asset_name": "jello_ycb_robolab",
+      "size": [
+        0.085,
+        0.028,
+        0.07
+      ],
+      "mass": 0.1,
+      "offset_xy": [
+        0.0,
+        0.06
+      ]
+    },
+    {
+      "name": "can",
+      "asset_name": "tomato_soup_can_ycb_robolab",
+      "size": [
+        0.066,
+        0.066,
+        0.12
+      ],
+      "mass": 0.35,
+      "offset_xy": [
+        0.105,
+        -0.04
+      ]
+    }
+  ],
   "camera_width": 640,
   "camera_height": 480,
-  "success_hold_s": 0.5,
-  "success_speed_m_s": 0.03,
-  "success_height_tolerance": 0.012,
-  "minimum_lift_height": 0.04,
   "seed": 42
 }

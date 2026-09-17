@@ -3,42 +3,88 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Explicit, provisional scene parameters until source calibration is available."""
+"""Configure the user-described starting scene; physical calibration remains provisional."""
 
 from __future__ import annotations
 
 import json
 import math
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
+
+
+def _vector(value, length, name, positive=False):
+    if len(value) != length or not all(math.isfinite(v) and (v > 0 if positive else True) for v in value):
+        raise ValueError(f"{name} must contain {length} finite {'positive ' if positive else ''}numbers")
+    return tuple(value)
+
+
+@dataclass
+class PropConfig:
+    """Describe one textured rigid object relative to the inside floor of the carton."""
+
+    name: str
+    asset_name: str
+    size: tuple[float, float, float]
+    mass: float
+    offset_xy: tuple[float, float]
+    yaw: float = 0.0
+    usd_path: str | None = None
+
+    def __post_init__(self):
+        if self.name not in {"apple", "jello_box", "can"}:
+            raise ValueError("Object names must be apple, jello_box, or can")
+        self.size = _vector(self.size, 3, f"{self.name}.size", positive=True)
+        self.offset_xy = _vector(self.offset_xy, 2, f"{self.name}.offset_xy")
+        if not math.isfinite(self.mass) or self.mass <= 0 or not math.isfinite(self.yaw):
+            raise ValueError("Object mass must be positive and yaw finite")
+        if not self.asset_name and not self.usd_path:
+            raise ValueError("Provide an asset_name or a compatible rigid USD path")
+
+    @property
+    def half_extent_xy(self):
+        """Return yaw-rotated footprint half extents for collision-free reset validation."""
+        c, s = abs(math.cos(self.yaw)), abs(math.sin(self.yaw))
+        x, y = self.size[:2]
+        return ((c * x + s * y) / 2, (s * x + c * y) / 2)
+
+
+def default_props():
+    return [
+        PropConfig("apple", "apple_02_objaverse_robolab", (0.075, 0.075, 0.075), 0.15, (-0.10, -0.045)),
+        PropConfig("jello_box", "jello_ycb_robolab", (0.085, 0.028, 0.070), 0.10, (0.0, 0.060)),
+        PropConfig("can", "tomato_soup_can_ycb_robolab", (0.066, 0.066, 0.120), 0.35, (0.105, -0.040)),
+    ]
 
 
 @dataclass
 class YellowBoxConfig:
-    """Configure a YAM station and a yellow-box placement task in metres."""
+    """Define the carton and its contents in metres, with explicit unverified assumptions."""
 
     usd_path: str = "~/.cache/isaaclab_arena/yam/yam_station.usd"
     source_dataset: str = "nvidia/yam_yellow_box_all"
     source_verified: bool = False
-    task_description: str = "Pick up the yellow box and place it on the blue target."
+    scene_version: str = "carton_contents_v2"
+    layout_source: str = "User description: apple, Jell-O box and can start inside a cardboard box"
+    task_description: str = ""
+    success_mode: str = "operator_confirmed"
     fps: int = 30
-    episode_length_s: float = 60.0
+    episode_length_s: float = 120.0
     table_height: float = 0.75
     table_size: tuple[float, float, float] = (0.9, 1.2, 0.05)
     table_center_xy: tuple[float, float] = (0.3, 0.0)
-    box_size: tuple[float, float, float] = (0.06, 0.06, 0.05)
-    box_mass: float = 0.08
-    box_start_xy: tuple[float, float] = (0.35, 0.15)
-    box_randomization_xy: tuple[float, float] = (0.05, 0.04)
-    box_yaw_range: tuple[float, float] = (-0.4, 0.4)
-    target_xy: tuple[float, float] = (0.4, -0.15)
-    target_size_xy: tuple[float, float] = (0.16, 0.16)
+    box_size: tuple[float, float, float] = (0.36, 0.28, 0.14)
+    box_wall_thickness: float = 0.004
+    box_mass: float = 0.18
+    box_start_xy: tuple[float, float] = (0.38, 0.0)
+    box_randomization_xy: tuple[float, float] = (0.015, 0.015)
+    box_yaw_range: tuple[float, float] = (-0.10, 0.10)
+    prop_randomization_xy: tuple[float, float] = (0.003, 0.003)
+    spawn_clearance: float = 0.002
+    settle_steps: int = 60
+    props: list[PropConfig] = field(default_factory=default_props)
     camera_width: int = 640
     camera_height: int = 480
-    success_hold_s: float = 0.5
-    success_speed_m_s: float = 0.03
-    success_height_tolerance: float = 0.012
-    minimum_lift_height: float = 0.04
     seed: int = 42
 
     def __post_init__(self):
@@ -49,76 +95,86 @@ class YellowBoxConfig:
             ("box_start_xy", 2),
             ("box_randomization_xy", 2),
             ("box_yaw_range", 2),
-            ("target_xy", 2),
-            ("target_size_xy", 2),
+            ("prop_randomization_xy", 2),
         ):
-            values = getattr(self, name)
-            if len(values) != length or not all(math.isfinite(value) for value in values):
-                raise ValueError(f"{name} must contain {length} finite numbers")
-            setattr(self, name, tuple(values))
+            setattr(self, name, _vector(getattr(self, name), length, name))
         for name in (
             "fps",
             "episode_length_s",
             "table_height",
             "box_mass",
+            "box_wall_thickness",
+            "spawn_clearance",
             "camera_width",
             "camera_height",
-            "success_hold_s",
-            "success_speed_m_s",
-            "success_height_tolerance",
-            "minimum_lift_height",
         ):
             value = getattr(self, name)
             if not math.isfinite(value) or value <= 0:
                 raise ValueError(f"{name} must be positive and finite")
-        for name in ("fps", "camera_width", "camera_height", "seed"):
+        for name in ("fps", "camera_width", "camera_height", "seed", "settle_steps"):
             if not isinstance(getattr(self, name), int):
                 raise ValueError(f"{name} must be an integer")
+        if self.settle_steps < 1:
+            raise ValueError("settle_steps must be positive")
         if self.camera_width % 2 or self.camera_height % 2:
             raise ValueError("Camera dimensions must be even for H.264 export")
-        if any(value <= 0 for value in (*self.table_size, *self.box_size, *self.target_size_xy)):
+        if min(*self.table_size, *self.box_size) <= 0:
             raise ValueError("Object dimensions must be positive")
-        if any(value < 0 for value in self.box_randomization_xy):
-            raise ValueError("Box randomization bounds cannot be negative")
+        if min(*self.box_randomization_xy, *self.prop_randomization_xy) < 0:
+            raise ValueError("Randomization bounds cannot be negative")
         if self.box_yaw_range[0] > self.box_yaw_range[1]:
             raise ValueError("Box yaw bounds must be ordered")
-        if self.success_hold_s >= self.episode_length_s:
-            raise ValueError("Success hold duration must be shorter than an episode")
-        if min(self.target_size_xy) <= math.hypot(*self.box_size[:2]):
-            raise ValueError("Target must contain the box footprint at arbitrary yaw")
+        if 2 * self.box_wall_thickness >= min(self.box_size):
+            raise ValueError("Box walls must leave an open interior")
+        if self.success_mode != "operator_confirmed":
+            raise ValueError("Only operator_confirmed success is supported until the real task is established")
+        self.props = [PropConfig(**p) if isinstance(p, dict) else p for p in self.props]
+        if len(self.props) != 3 or {p.name for p in self.props} != {"apple", "jello_box", "can"}:
+            raise ValueError("Exactly one apple, jello_box, and can must start inside the carton")
+        # A bounding circle guarantees containment on the table for every sampled box yaw.
+        radius = math.hypot(*self.box_size[:2]) / 2
         for axis in range(2):
-            table_min = self.table_center_xy[axis] - self.table_size[axis] / 2
-            table_max = self.table_center_xy[axis] + self.table_size[axis] / 2
-            box_radius = math.hypot(*self.box_size[:2]) / 2
-            start_min = self.box_start_xy[axis] - self.box_randomization_xy[axis] - box_radius
-            start_max = self.box_start_xy[axis] + self.box_randomization_xy[axis] + box_radius
-            target_min = self.target_xy[axis] - self.target_size_xy[axis] / 2
-            target_max = self.target_xy[axis] + self.target_size_xy[axis] / 2
-            if min(start_min, target_min) < table_min or max(start_max, target_max) > table_max:
-                raise ValueError("Box spawn range and target must fit on the tabletop")
-        separation = [
-            abs(self.box_start_xy[axis] - self.target_xy[axis])
-            > self.box_randomization_xy[axis] + self.target_size_xy[axis] / 2 + math.hypot(*self.box_size[:2]) / 2
-            for axis in range(2)
-        ]
-        if not any(separation):
-            raise ValueError("Box spawn range must not overlap the target")
-        if not self.task_description.strip():
-            raise ValueError("Task description cannot be empty")
+            if (
+                abs(self.box_start_xy[axis] - self.table_center_xy[axis]) + self.box_randomization_xy[axis] + radius
+                > self.table_size[axis] / 2
+            ):
+                raise ValueError("Box reset range must fit on the tabletop")
+        for prop in self.props:
+            for axis in range(2):
+                if (
+                    abs(prop.offset_xy[axis])
+                    + prop.half_extent_xy[axis]
+                    + self.prop_randomization_xy[axis]
+                    + self.spawn_clearance
+                    >= self.box_size[axis] / 2 - self.box_wall_thickness
+                ):
+                    raise ValueError(f"{prop.name} reset range intersects a carton wall")
+            if prop.size[2] + self.box_wall_thickness + self.spawn_clearance > self.box_size[2]:
+                raise ValueError(f"{prop.name} must start below the carton rim")
+        for i, first in enumerate(self.props):
+            for second in self.props[i + 1 :]:
+                if not any(
+                    abs(first.offset_xy[a] - second.offset_xy[a])
+                    > first.half_extent_xy[a]
+                    + second.half_extent_xy[a]
+                    + 2 * self.prop_randomization_xy[a]
+                    + self.spawn_clearance
+                    for a in range(2)
+                ):
+                    raise ValueError(f"{first.name} and {second.name} reset ranges overlap")
 
     @classmethod
     def load(cls, path: str | Path | None = None) -> YellowBoxConfig:
-        """Read a JSON configuration, rejecting misspelled parameter names."""
+        """Load explicit scene parameters, rejecting unknown or obsolete fields."""
         if path is None:
             return cls()
         values = json.loads(Path(path).expanduser().read_text())
         if not isinstance(values, dict):
             raise ValueError("Scene configuration must be a JSON object")
-        unknown = set(values) - {field.name for field in fields(cls)}
+        unknown = set(values) - {f.name for f in fields(cls)}
         if unknown:
             raise ValueError(f"Unknown scene parameters: {sorted(unknown)}")
         return cls(**values)
 
-    def to_dict(self) -> dict:
-        """Return serializable scene provenance for each recording."""
+    def to_dict(self):
         return asdict(self)
